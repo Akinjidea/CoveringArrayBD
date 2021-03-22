@@ -12,29 +12,29 @@ namespace CoveringArrayBalancingDistributed
         {
             Console.WriteLine("\tПроверка строк на ядерность...");
             Console.ForegroundColor = ConsoleColor.Red;
-            for (int j = 1; j < columns; j++)
+            for (int column = 1; column < columns; column++)
             {
-                int coreLine = 0;
-                int index = 0;
-                for (int i = 1; i < rows; i++)
+                bool coreLine = false;
+                int coreLineIndex = 0;
+                for (int row = 1; row < rows; row++)
                 {
-                    if (array[i, j] == 1 && coreLine == 1)
+                    if (array[row, column] == 1 && coreLine)
                         break;
-                    if (array[i, j] == 1)
+                    if (array[row, column] == 1)
                     {
-                        coreLine = 1;
-                        index = i;
+                        coreLine = true;
+                        coreLineIndex = row;
                     }
-                    if (i == rows - 1)
+                    if (row == rows - 1)
                     {
-                        for (int k = 1; k < columns; k++)
+                        for (int coreColumn = 1; coreColumn < columns; coreColumn++)
                         {
-                            if (array[index, k] == 1)
-                                listCoreColumns.Add(array[0, k]);
+                            if (array[coreLineIndex, coreColumn] == 1)
+                                listCoreColumns.Add(array[0, coreColumn]);
                         }
-                        Console.WriteLine($"\tВ столбце {array[0, j]} ядерная строка - {Program.rowName[array[index, 0]]}!");
-                        listCoreRows.Add(array[index, 0]);
-                        fullCoveringRows.Add(array[index, 0]);
+                        Console.WriteLine($"\tВ столбце {array[0, column]} ядерная строка - {Program.rowName[array[coreLineIndex, 0]]}!");
+                        listCoreRows.Add(array[coreLineIndex, 0]);
+                        fullCoveringRows.Add(array[coreLineIndex, 0]);
                         Program.possible = true;
                     }
                 }
@@ -46,16 +46,16 @@ namespace CoveringArrayBalancingDistributed
         {
             Console.WriteLine("\tПроверка строк на антиядерность...");
             Console.ForegroundColor = ConsoleColor.Red;
-            for (int i = 1; i < rows; i++)
+            for (int row = 1; row < rows; row++)
             {
-                for (int j = 1; j < columns; j++)
+                for (int column = 1; column < columns; column++)
                 {
-                    if (array[i, j] == 1)
+                    if (array[row, column] == 1)
                         break;
-                    if (j == columns - 1)
+                    if (column == columns - 1)
                     {
-                        Console.WriteLine($"\tСтрока {Program.rowName[i]} является антиядерной!");
-                        listAntiCoreRows.Add(array[i, 0]);
+                        Console.WriteLine($"\tСтрока {Program.rowName[row]} является антиядерной!");
+                        listAntiCoreRows.Add(array[row, 0]);
                         Program.possible = true;
                     }
                 }
@@ -66,148 +66,54 @@ namespace CoveringArrayBalancingDistributed
         public static void RowsCovering(int[,] array, int rows, int columns, List<int> listRows)
         {
             Console.WriteLine("\tПроверка строк на покрытие...");
-            bool evenCount = (rows - 1) % 2 == 0;
-            int newRows = (rows - 1) / 2;
             int totalCount = 0;
 
             Console.ForegroundColor = ConsoleColor.Red;
-            for (int i = 1; i < newRows + 1; i++)
+            for (int basicRow = 1; basicRow < rows; basicRow++)
             {
-                for (int inc = i; inc < rows - 1; inc++)
+                for (int comparedRow = basicRow; comparedRow < rows - 1; comparedRow++)
                 {
                     bool firstCovering = false;
                     bool lastCovering = false;
                     bool couldCover = true;
                     bool equalRows = true;
 
-                    for (int k = 1; k < columns; k++)
+                    for (int column = 1; column < columns; column++)
                     {
-                        if (array[i, k] != array[inc + 1, k] && equalRows)
+                        if (array[basicRow, column] != array[comparedRow + 1, column] && equalRows)
                             equalRows = false;
-                        if (k == columns - 1 && equalRows)
+                        if (column == columns - 1 && equalRows)
                         {
-                            Console.WriteLine($"\tСтроки {Program.rowName[i]} и {Program.rowName[inc + 1]} является одинаковыми!");
-                            listRows.Add(array[i, 0]);
+                            Console.WriteLine($"\tСтроки {Program.rowName[basicRow]} и {Program.rowName[comparedRow + 1]} является одинаковыми!");
+                            listRows.Add(array[basicRow, 0]);
                             Program.possible = true;
                         }
 
-                        if (array[i, k] > array[inc + 1, k] || !couldCover)
+                        if (array[basicRow, column] > array[comparedRow + 1, column] || !couldCover)
                             firstCovering = true;
-                        if (array[i, k] < array[inc + 1, k] || !couldCover)
+                        if (array[basicRow, column] < array[comparedRow + 1, column] || !couldCover)
                             lastCovering = true;
 
                         if (firstCovering && lastCovering && couldCover)
                             couldCover = false;
-                        if (k == columns - 1 && couldCover)
+                        if (column == columns - 1 && couldCover)
                         {
                             if (firstCovering)
                             {
-                                Console.WriteLine($"\tСтрока {Program.rowName[array[i, 0]]} поглощает строку {Program.rowName[array[inc + 1, 0]]}!");
-                                listRows.Add(array[inc + 1, 0]);
+                                Console.WriteLine($"\tСтрока {Program.rowName[array[basicRow, 0]]} поглощает строку {Program.rowName[array[comparedRow + 1, 0]]}!");
+                                listRows.Add(array[comparedRow + 1, 0]);
                             }
                             else if (lastCovering)
                             {
-                                Console.WriteLine($"\tСтрока {Program.rowName[inc + 1]} поглощает строку {Program.rowName[i]}!");
-                                listRows.Add(array[i, 0]);
+                                Console.WriteLine($"\tСтрока {Program.rowName[comparedRow + 1]} поглощает строку {Program.rowName[basicRow]}!");
+                                listRows.Add(array[basicRow, 0]);
                                 Program.possible = true;
                             }
                         }
                     }
                 }
-                // Для балансированого покрытия с четным количество строк! Количество строк измененно!
-                for (int a = rows - i, b = rows - i; b < rows - 1; b++)
-                {
-                    bool firstCovering = false;
-                    bool lastCovering = false;
-                    bool couldCover = true;
-                    bool equalRows = true;
 
-                    int inc = b;
-
-                    for (int k = 1; k < columns; k++)
-                    {
-                        if (array[a, k] != array[inc + 1, k] && equalRows)
-                            equalRows = false;
-                        if (k == columns - 1 && equalRows)
-                        {
-                            Console.WriteLine("\tСтроки {0} и {1} является одинаковыми!", Program.rowName[a], Program.rowName[inc + 1]);
-                            listRows.Add(array[a, 0]);
-                            Program.possible = true;
-                        }
-
-                        if (array[a, k] > array[inc + 1, k] || !couldCover)
-                            firstCovering = true;
-                        if (array[a, k] < array[inc + 1, k] || !couldCover)
-                            lastCovering = true;
-
-                        if (firstCovering && lastCovering && couldCover)
-                            couldCover = false;
-                        if (k == columns - 1 && couldCover)
-                        {
-                            if (firstCovering)
-                            {
-                                Console.WriteLine($"\tСтрока {Program.rowName[a]} поглощает строку {Program.rowName[inc + 1]}!");
-                                listRows.Add(array[inc + 1, 0]);
-                            }
-                            else if (lastCovering)
-                            {
-                                Console.WriteLine($"\tСтрока {Program.rowName[inc + 1]} поглощает строку {Program.rowName[a]}!");
-                                listRows.Add(array[a, 0]);
-                                Program.possible = true;
-                            }
-                        }
-                    }
-                    inc++;
-                }
-                // Для балансированого покрытия с нечетным количество строк! Количество строк изменено!
-                if (!evenCount)
-                {
-                    for (int b = rows - newRows - 1, a = rows - newRows - 1; a < b + 1; a++)
-                    {
-                        bool firstCovering = false;
-                        bool lastCovering = false;
-                        bool couldCover = true;
-                        bool equalRows = true;
-
-                        int inc = b + i - 1;
-
-                        for (int k = 1; k < columns; k++)
-                        {
-                            if (array[b, k] != array[inc + 1, k] && equalRows)
-                                equalRows = false;
-                            if (k == columns - 1 && equalRows)
-                            {
-                                Console.WriteLine($"\tСтроки {Program.rowName[b]} и {Program.rowName[inc + 1]} является одинаковыми!");
-                                listRows.Add(array[b, 0]);
-                                Program.possible = true;
-                            }
-
-                            if (array[b, k] > array[inc + 1, k] || !couldCover)
-                                firstCovering = true;
-                            if (array[b, k] < array[inc + 1, k] || !couldCover)
-                                lastCovering = true;
-
-                            if (firstCovering && lastCovering && couldCover)
-                                couldCover = false;
-                            if (k == columns - 1 && couldCover)
-                            {
-                                if (firstCovering)
-                                {
-                                    Console.WriteLine($"\tСтрока {Program.rowName[b]} поглощает строку {Program.rowName[inc + 1]}!");
-                                    listRows.Add(array[inc + 1, 0]);
-                                }
-                                else if (lastCovering)
-                                {
-                                    Console.WriteLine($"\tСтрока {Program.rowName[inc + 1]} поглощает строку {Program.rowName[b]}!");
-                                    listRows.Add(array[b, 0]);
-                                    Program.possible = true;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                totalCount = i;
+                totalCount = basicRow;
             }
             Console.ForegroundColor = ConsoleColor.White;
 
@@ -217,156 +123,58 @@ namespace CoveringArrayBalancingDistributed
         public static void ColumnsCovering(int[,] array, int rows, int columns, List<int> listColumns)
         {
             Console.WriteLine("\tПроверка столбцов на покрытие...");
-            bool evenCount = (columns - 1) % 2 == 0;
-            int newColumns = (columns - 1) / 2;
+
             int totalCount = 0;
 
             Console.ForegroundColor = ConsoleColor.Red;
-            for (int i = 1; i < newColumns + 1; i++)
+            for (int basicColumn = 1; basicColumn < columns; basicColumn++)
             {
-                for (int inc = i; inc < columns - 1; inc++)
+                for (int comparedColumn = basicColumn; comparedColumn < columns - 1; comparedColumn++)
                 {
                     bool firstCovering = false;
                     bool lastCovering = false;
                     bool couldCover = true;
                     bool equalColumns = true;
 
-                    for (int k = 1; k < rows; k++)
+                    for (int row = 1; row < rows; row++)
                     {
-                        if (array[k, i] != array[k, inc + 1] && equalColumns)
+                        if (array[row, basicColumn] != array[row, comparedColumn + 1] && equalColumns)
                             equalColumns = false;
 
-                        if (k == rows - 1 && equalColumns)
+                        if (row == rows - 1 && equalColumns)
                         {
-                            Console.WriteLine($"\tСтолбцы {array[0, i]} и {array[0, inc + 1]} являются одинаковыми!");
-                            listColumns.Add(array[0, i]);
+                            Console.WriteLine($"\tСтолбцы {array[0, basicColumn]} и {array[0, comparedColumn + 1]} являются одинаковыми!");
+                            listColumns.Add(array[0, basicColumn]);
                             Program.possible = true;
                         }
 
-                        if (array[k, i] > array[k, inc + 1] || !couldCover)
+                        if (array[row, basicColumn] > array[row, comparedColumn + 1] || !couldCover)
                             firstCovering = true;
-                        if (array[k, i] < array[k, inc + 1] || !couldCover)
+                        if (array[row, basicColumn] < array[row, comparedColumn + 1] || !couldCover)
                             lastCovering = true;
 
                         if (firstCovering && lastCovering && couldCover)
                             couldCover = false;
 
-                        if (k == rows - 1 && couldCover)
+                        if (row == rows - 1 && couldCover)
                         {
                             if (firstCovering)
                             {
-                                Console.WriteLine($"\tСтолбец {array[0, i]} поглощает столбец {array[0, inc + 1]}!");
-                                listColumns.Add(array[0, i]);
+                                Console.WriteLine($"\tСтолбец {array[0, basicColumn]} поглощает столбец {array[0, comparedColumn + 1]}!");
+                                listColumns.Add(array[0, basicColumn]);
                                 Program.possible = true;
                             }
                             else if (lastCovering)
                             {
-                                Console.WriteLine($"\tСтолбец {array[0, inc + 1]} поглощает столбец {array[0, i]}!");
-                                listColumns.Add(array[0, inc + 1]);
+                                Console.WriteLine($"\tСтолбец {array[0, comparedColumn + 1]} поглощает столбец {array[0, basicColumn]}!");
+                                listColumns.Add(array[0, comparedColumn + 1]);
                                 Program.possible = true;
                             }
                         }
                     }
                 }
-                // Для балансированого покрытия с четным количество столбцов! Количество столбцов измененно!
-                for (int a = columns - i, b = columns - i; b < columns - 1; b++)
-                {
-                    bool firstCovering = false;
-                    bool lastCovering = false;
-                    bool couldCover = true;
-                    bool equalColumns = true;
 
-                    int inc = b;
-
-                    for (int k = 1; k < rows; k++)
-                    {
-                        if (array[k, a] != array[k, inc + 1] && equalColumns)
-                            equalColumns = false;
-
-                        if (k == rows - 1 && equalColumns)
-                        {
-                            Console.WriteLine($"\tСтолбцы {array[0, a]} и {array[0, inc + 1]} являются одинаковыми!");
-                            listColumns.Add(array[0, a]);
-                            Program.possible = true;
-                        }
-
-                        if (array[k, a] > array[k, inc + 1] || !couldCover)
-                            firstCovering = true;
-                        if (array[k, a] < array[k, inc + 1] || !couldCover)
-                            lastCovering = true;
-
-                        if (firstCovering && lastCovering && couldCover)
-                            couldCover = false;
-
-                        if (k == rows - 1 && couldCover)
-                        {
-                            if (firstCovering)
-                            {
-                                Console.WriteLine($"\tСтолбец {array[0, a]} поглощает столбец {array[0, inc + a]}!");
-                                listColumns.Add(array[0, a]);
-                                Program.possible = true;
-                            }
-                            else if (lastCovering)
-                            {
-                                Console.WriteLine($"\tСтолбец {array[0, inc + 1]} поглощает столбец {array[0, a]}!");
-                                listColumns.Add(array[0, inc + 1]);
-                                Program.possible = true;
-                            }
-                        }
-                    }
-                }
-                // Для балансированого покрытия с нечетным количество столбцов! Количество столбцов изменено!
-                if (!evenCount)
-                {
-                    for (int b = columns - newColumns - 1, a = columns - newColumns - 1; a < b + 1; a++)
-                    {
-                        bool firstCovering = false;
-                        bool lastCovering = false;
-                        bool couldCover = true;
-                        bool equalColumns = true;
-
-                        int inc = b + i - 1;
-
-                        for (int k = 1; k < rows; k++)
-                        {
-                            if (array[k, b] != array[k, inc + 1] && equalColumns)
-                                equalColumns = false;
-
-                            if (k == rows - 1 && equalColumns)
-                            {
-                                Console.WriteLine($"\tСтолбцы {array[0, b]} и {array[0, inc + 1]} являются одинаковыми!");
-                                listColumns.Add(array[0, b]);
-                                Program.possible = true;
-                            }
-
-                            if (array[k, b] > array[k, inc + 1] || !couldCover)
-                                firstCovering = true;
-                            if (array[k, b] < array[k, inc + 1] || !couldCover)
-                                lastCovering = true;
-
-                            if (firstCovering && lastCovering && couldCover)
-                                couldCover = false;
-
-                            if (k == rows - 1 && couldCover)
-                            {
-                                if (firstCovering)
-                                {
-                                    Console.WriteLine($"\tСтолбец {array[0, b]} поглощает столбец {array[0, inc + b]}!");
-                                    listColumns.Add(array[0, b]);
-                                    Program.possible = true;
-                                }
-                                else if (lastCovering)
-                                {
-                                    Console.WriteLine($"\tСтолбец {array[0, inc + 1]} поглощает столбец {array[0, b]}!");
-                                    listColumns.Add(array[0, inc + 1]);
-                                    Program.possible = true;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                totalCount = i;
+                totalCount = basicColumn;
             }
             Console.ForegroundColor = ConsoleColor.White;
 
